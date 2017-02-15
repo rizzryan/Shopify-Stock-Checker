@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 #!/python2.7
 #Created by aj nicolas
-import requests, crayons
+import requests
+from slacker import Slacker
 from bs4 import BeautifulSoup
+
+slack = Slacker('') # Enter in your Slack token
 
 #While true to get a actual link
 def linkfriendly():
@@ -13,7 +16,7 @@ def linkfriendly():
     while True:
         #Gets user shopify link
         try:
-            url = raw_input(crayons.cyan('PASTE LINK HERE: '))
+            url = raw_input('PASTE LINK HERE: ')
             headers ={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36'
                     '(KHTML, like Gecko) Chrome/56.0.2924.28 Safari/537.36'}
 
@@ -23,7 +26,7 @@ def linkfriendly():
             # Handles exceptions
         except (requests.exceptions.MissingSchema,requests.exceptions.InvalidURL,requests.exceptions.ConnectionError,
             requests.exceptions.InvalidSchema,NameError) as e:
-            print crayons.red('link no bueno!')
+            print 'The link is not good!'
 
 #Grabs handle text
 def grabhandle():
@@ -44,11 +47,12 @@ def grabprice():
 
 #Parses stock,sz name, and variants from shopify site
 def grabszstk():
+    global slack
     sz = []
     for size in soup.findAll("title")[1:]:
         # find text then append to a list
         sz.append(size)
- 
+
     stk = []
     for stock in soup.findAll("inventory-quantity"):
         stk.append(stock)
@@ -60,21 +64,24 @@ def grabszstk():
     total = []
     for stock in soup.findAll("inventory-quantity"):
         total.append(int(stock.text))
-    
+
     # formats the data
     fmt = '{:<5}{:<13}{:<10}{}'
     fmat = '{:<5}{:<13}{}'
 
     # zips the for lists together
     if len(stk) > 0:
-        print(fmt.format('', 'size', 'stock', 'variant'))
+        print(fmt.format('', 'Size', 'Stock', 'Variant'))
         for i, (sz, stk, variants) in enumerate(zip(sz, stk, variants)):
             print(fmt.format(i, sz.text, stk.text, variants.text))
         print 'TOTAL STOCK:', sum(total)
+        slack.chat.post_message('#test', 'TOTAL STOCK: ') # Change #test to your channel name
+        slack.chat.post_message('#test', sum(total)) # Change #test to your channel name
 
     #if stock wasn't found
     else:
-        print crayons.red('STOCK WAS NOT FOUND')
+        print 'STOCK WAS NOT FOUND'
+        slack.chat.post_message('#test', 'STOCK WAS NOT FOUND') # Change #test to your channel name
         print(fmat.format('', 'size','variant'))
         for i, (sz,variants) in enumerate(zip(sz,variants)):
             print(fmat.format(i, sz.text, variants.text))
@@ -82,15 +89,15 @@ def grabszstk():
 #Also bad formatting
 def formattext():
     print '--' * 38
-    print crayons.blue(url)
-    print crayons.yellow('Press cmd + double click link to go to link!')
+    print url
+    print 'Press cmd + double click link to go to link!'
     try:
-        print grabhandle() + ' | ' + grabdate() + ' \n' + crayons.green(grabprice()) + ' \n' + grabsku()
+        print grabhandle() + ' | ' + grabdate() + ' \n' + grabprice() + ' \n' + grabsku()
         print ' '*38
-        print crayons.white(grabszstk())
-        print crayons.yellow('Press ctrl + z to exit')
+        print grabszstk()
+        print 'Press ctrl + z to exit'
     except TypeError:
-        print crayons.red("Try copying everything before the '?variant' \n or before the '?' in the link!".upper())
+        print "Try copying everything before the '?variant' \n or before the '?' in the link!".upper()
 
 #While true statment for multiple link checks!
 while True:
