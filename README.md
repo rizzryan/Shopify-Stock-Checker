@@ -10,7 +10,6 @@
 
 -Requests
 
--Crayons
 
 install pip
 
@@ -22,3 +21,6 @@ install dependencies as:```pip install 'dependency here'```
 3. Paste shopify links.
 
 ![screen shot 2017-02-05 at 12 47 13 pm](https://cloud.githubusercontent.com/assets/22848229/22628869/585dc3e8-eba1-11e6-9735-fe2c4713559f.png)
+
+# Future improvement
+Maybe a working checkout link will be added in the future.
